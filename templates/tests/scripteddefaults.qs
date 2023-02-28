@@ -24,7 +24,7 @@ function IfNodeFactory( tagContent, parser )
 
   var node = new Node("IfNode", truthVariable);
 
-  var trueList = parser.parse( node, [ "else", "endif2" ] );
+  var trueList = parser.parse( node, [ "else", "endif2" ],  );
   node.setNodeList("trueList", trueList);
   if (parser.takeNextToken().content == "else")
   {

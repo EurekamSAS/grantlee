@@ -64,10 +64,10 @@ void TemplateImpl::setContent(const QString &templateString)
 
   try {
     d->m_nodeList = d->compileString(templateString);
-    d->setError(NoError, QString());
+    d->setError(NoError, QString(),-1,-1,QString());
   } catch (Grantlee::Exception &e) {
     qCWarning(GRANTLEE_TEMPLATE) << e.what();
-    d->setError(e.errorCode(), e.what());
+    d->setError(e.errorCode(), e.what(), e.errorLine(), e.errorColumn(), e.errorTokenContent());
   }
 }
 
@@ -90,10 +90,10 @@ OutputStream *TemplateImpl::render(OutputStream *stream, Context *c) const
 
   try {
     d->m_nodeList.render(stream, c);
-    d->setError(NoError, QString());
+    d->setError(NoError, QString(),-1,-1,QString());
   } catch (Grantlee::Exception &e) {
     qCWarning(GRANTLEE_TEMPLATE) << e.what();
-    d->setError(e.errorCode(), e.what());
+    d->setError(e.errorCode(), e.what(), e.errorLine(), e.errorColumn(), e.errorTokenContent());
   }
 
   c->renderContext()->pop();
@@ -113,10 +113,13 @@ void TemplateImpl::setNodeList(const NodeList &list)
   d->m_nodeList = list;
 }
 
-void TemplatePrivate::setError(Error type, const QString &message) const
+void TemplatePrivate::setError(Error type, const QString &message, const int line, const int column, const QString &tokenContent) const
 {
   m_error = type;
   m_errorString = message;
+  m_errorLine = line;
+  m_errorColumn = column;
+  m_errorTokenContent = tokenContent;
 }
 
 Error TemplateImpl::error() const
@@ -129,6 +132,24 @@ QString TemplateImpl::errorString() const
 {
   Q_D(const Template);
   return d->m_errorString;
+}
+
+int TemplateImpl::errorColumn() const
+{
+    Q_D(const Template);
+    return d->m_errorColumn;
+}
+
+int TemplateImpl::errorLine() const
+{
+    Q_D(const Template);
+    return d->m_errorLine;
+}
+
+QString TemplateImpl::errorTokenContent() const
+{
+    Q_D(const Template);
+    return d->m_errorTokenContent;
 }
 
 Engine const *TemplateImpl::engine() const

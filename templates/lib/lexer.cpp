@@ -335,6 +335,7 @@ void Lexer::finalizeToken(int nextPosition, bool processSyntax)
         = m_templateString.mid(m_processedUpto, nextPosition - m_processedUpto);
     token.tokenType = TextToken;
     token.linenumber = m_lineCount;
+    token.columnnumber = m_processedUpto;
     m_tokenList.append(token);
   }
 
@@ -356,6 +357,7 @@ void Lexer::finalizeToken(int nextPosition, bool processSyntax)
                  m_endSyntaxPosition - m_startSyntaxPosition - 3)
             .trimmed();
   syntaxToken.linenumber = m_lineCount;
+  syntaxToken.columnnumber = m_startSyntaxPosition;
 
   if (differentiator == QLatin1Char('{')) {
     syntaxToken.tokenType = VariableToken;

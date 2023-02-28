@@ -86,7 +86,10 @@ Variable::Variable(const QString &var) : d_ptr(new VariablePrivate(this))
     delete d_ptr;
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("Variable may not end with a dot: %1").arg(localVar));
+        QStringLiteral("Variable may not end with a dot: %1").arg(localVar),
+                  -1,
+                  -1,
+                  QString());
   }
 
   auto processedNumber = false;
@@ -119,7 +122,10 @@ Variable::Variable(const QString &var) : d_ptr(new VariablePrivate(this))
             TagSyntaxError,
             QStringLiteral(
                 "Variables and attributes may not begin with underscores: %1")
-                .arg(localVar));
+                .arg(localVar),
+                      -1,
+                      -1,
+                      localVar);
       }
       d->m_lookups = localVar.split(QLatin1Char('.'));
     }

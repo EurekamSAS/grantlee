@@ -36,7 +36,7 @@ class I18ncNodeFactory : public AbstractNodeFactory
 public:
   I18ncNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class I18ncVarNodeFactory : public AbstractNodeFactory
@@ -45,14 +45,14 @@ class I18ncVarNodeFactory : public AbstractNodeFactory
 public:
   I18ncVarNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class I18ncNode : public Node
 {
   Q_OBJECT
 public:
-  I18ncNode(const QString &sourceText, const QString &context,
+  I18ncNode(const Grantlee::Token &token, const QString &sourceText, const QString &context,
             const QList<FilterExpression> &feList, QObject *parent = {});
   void render(OutputStream *stream, Context *c) const override;
 
@@ -66,7 +66,7 @@ class I18ncVarNode : public Node
 {
   Q_OBJECT
 public:
-  I18ncVarNode(const QString &sourceText, const QString &context,
+  I18ncVarNode(const Grantlee::Token &token, const QString &sourceText, const QString &context,
                const QList<FilterExpression> &feList, const QString &resultName,
                QObject *parent = {});
   void render(OutputStream *stream, Context *c) const override;

@@ -24,7 +24,7 @@
 #include <QtCore/QObject>
 #include <QtCore/QStringList>
 #include <QtQml/QJSValue>
-
+#include <token.h>
 namespace Grantlee
 {
 class Parser;
@@ -41,10 +41,10 @@ public:
   Parser *parser() { return m_p; }
 
 public Q_SLOTS:
-  QList<QObject *> parse(QObject *parent, const QString &stopAt);
-  QList<QObject *> parse(QObject *parent, const QStringList &stopAt = {});
+  QList<QObject *> parse(QObject *parent, const QString &stopAt, const Token &tagRef={});
+  QList<QObject *> parse(QObject *parent, const QStringList &stopAt = {}, const Token &tagRef={});
 
-  void skipPast(const QString &tag);
+  void skipPast(const QString &tag, const Token &tagRef);
 
   QJSValue takeNextToken();
   bool hasNextToken() const;

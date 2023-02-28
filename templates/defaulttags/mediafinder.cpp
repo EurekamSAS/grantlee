@@ -29,24 +29,27 @@
 
 MediaFinderNodeFactory::MediaFinderNodeFactory() = default;
 
-Grantlee::Node *MediaFinderNodeFactory::getNode(const QString &tagContent,
+Grantlee::Node *MediaFinderNodeFactory::getNode(const Grantlee::Token &tag,
                                                 Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   if (expr.size() <= 1) {
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("'media_finder' tag requires at least one argument"));
+        QStringLiteral("'media_finder' tag requires at least one argument"),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
   expr.takeAt(0);
 
-  return new MediaFinderNode(getFilterExpressionList(expr, p), p);
+  return new MediaFinderNode(tag, getFilterExpressionList(expr, p), p);
 }
 
-MediaFinderNode::MediaFinderNode(
+MediaFinderNode::MediaFinderNode(const Grantlee::Token &token,
     const QList<FilterExpression> &mediaExpressionList, QObject *parent)
-    : Node(parent), m_mediaExpressionList(mediaExpressionList)
+    : Node(token, parent), m_mediaExpressionList(mediaExpressionList)
 {
 }
 

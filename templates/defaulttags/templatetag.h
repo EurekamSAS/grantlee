@@ -31,7 +31,7 @@ class TemplateTagNodeFactory : public AbstractNodeFactory
 public:
   TemplateTagNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class TemplateTagNode : public Node
@@ -43,7 +43,7 @@ public:
   Nodes to render if the expression is true
   Nodes to render if the expression is false
   */
-  explicit TemplateTagNode(const QString &tagName, QObject *parent = {});
+  explicit TemplateTagNode(const Grantlee::Token &token, const QString &tagName, QObject *parent = {});
 
   void render(OutputStream *stream, Context *c) const override;
 

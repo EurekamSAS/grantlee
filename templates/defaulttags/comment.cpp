@@ -24,16 +24,16 @@
 
 CommentNodeFactory::CommentNodeFactory() = default;
 
-Node *CommentNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *CommentNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  Q_UNUSED(tagContent);
+  Q_UNUSED(tag.content);
 
-  p->skipPast(QStringLiteral("endcomment"));
+  p->skipPast(QStringLiteral("endcomment"), tag);
 
-  return new CommentNode(p);
+  return new CommentNode(tag, p);
 }
 
-CommentNode::CommentNode(QObject *parent) : Node(parent) {}
+CommentNode::CommentNode(const Grantlee::Token &token, QObject *parent) : Node(token, parent) {}
 
 void CommentNode::render(OutputStream *stream, Context *c) const
 {

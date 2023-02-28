@@ -25,9 +25,9 @@
 
 LoadNodeFactory::LoadNodeFactory() = default;
 
-Node *LoadNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *LoadNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = tagContent.split(QLatin1Char(' '),
+  auto expr = tag.content.split(QLatin1Char(' '),
 #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
                                QString::SkipEmptyParts
 #else
@@ -38,7 +38,10 @@ Node *LoadNodeFactory::getNode(const QString &tagContent, Parser *p) const
   if (expr.size() <= 1) {
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("%1 expects at least one argument").arg(expr.first()));
+        QStringLiteral("%1 expects at least one argument").arg(expr.first()),
+        tag.linenumber,
+        tag.columnnumber,
+        tag.content);
   }
 
   expr.takeAt(0);
@@ -47,10 +50,10 @@ Node *LoadNodeFactory::getNode(const QString &tagContent, Parser *p) const
     p->loadLib(i);
   }
 
-  return new LoadNode(p);
+  return new LoadNode(tag, p);
 }
 
-LoadNode::LoadNode(QObject *parent) : Node(parent) {}
+LoadNode::LoadNode(const Grantlee::Token &token, QObject *parent) : Node(token, parent) {}
 
 void LoadNode::render(OutputStream *stream, Context *c) const
 {

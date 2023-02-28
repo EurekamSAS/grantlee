@@ -173,7 +173,7 @@ void IfToken::nud(IfParser *parser)
   throw Grantlee::Exception(
       Grantlee::TagSyntaxError,
       QStringLiteral("Not expecting '%1' in this position in if tag.")
-          .arg(mTokenName));
+          .arg(mTokenName),-1, -1,mTokenName);
 }
 
 void IfToken::led(QSharedPointer<IfToken> left, IfParser *parser)
@@ -199,7 +199,7 @@ void IfToken::led(QSharedPointer<IfToken> left, IfParser *parser)
   throw Grantlee::Exception(
       Grantlee::TagSyntaxError,
       QStringLiteral("Not expecting '%1' as infix operator in if tag.")
-          .arg(mTokenName));
+          .arg(mTokenName),-1,-1,mTokenName);
 }
 
 IfParser::IfParser(Grantlee::Parser *parser, const QStringList &args)
@@ -259,7 +259,7 @@ QSharedPointer<IfToken> IfParser::parse()
     throw Grantlee::Exception(
         Grantlee::TagSyntaxError,
         QStringLiteral("Unused '%1' at end of if expression.")
-            .arg(mCurrentToken->tokenName()));
+            .arg(mCurrentToken->tokenName()),-1,-1,mCurrentToken->tokenName());
   }
 
   return r;

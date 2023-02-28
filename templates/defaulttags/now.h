@@ -31,14 +31,14 @@ class NowNodeFactory : public AbstractNodeFactory
 public:
   NowNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class NowNode : public Node
 {
   Q_OBJECT
 public:
-  explicit NowNode(const QString &formatString, QObject *parent = {});
+  explicit NowNode(const Grantlee::Token &token, const QString &formatString, QObject *parent = {});
 
   void render(OutputStream *stream, Context *c) const override;
 

@@ -31,14 +31,14 @@ class WithLocaleNodeFactory : public AbstractNodeFactory
 public:
   WithLocaleNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class WithLocaleNode : public Node
 {
   Q_OBJECT
 public:
-  WithLocaleNode(const FilterExpression &localeName, QObject *parent = {});
+  WithLocaleNode(const Grantlee::Token &token, const FilterExpression &localeName, QObject *parent = {});
 
   void setNodeList(const NodeList &nodeList);
 

@@ -30,14 +30,14 @@ class FirstOfNodeFactory : public AbstractNodeFactory
 public:
   FirstOfNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class FirstOfNode : public Node
 {
   Q_OBJECT
 public:
-  explicit FirstOfNode(const QList<FilterExpression> &list,
+  explicit FirstOfNode(const Grantlee::Token &token, const QList<FilterExpression> &list,
                        QObject *parent = {});
 
   void render(OutputStream *stream, Context *c) const override;

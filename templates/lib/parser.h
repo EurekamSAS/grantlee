@@ -70,19 +70,19 @@ public:
 
     @see AbstractNodeFactory::getNode
   */
-  NodeList parse(Node *parent, const QStringList &stopAt = {});
+  NodeList parse(Node *parent, const QStringList &stopAt = {}, const Token &tagRef={});
 
   /**
     This is an overloaded method.
     @see parse.
   */
-  NodeList parse(TemplateImpl *parent, const QStringList &stopAt = {});
+  NodeList parse(TemplateImpl *parent, const QStringList &stopAt = {}, const Token &tagRef={});
 
   /**
     This is an overloaded method.
     @see parse.
   */
-  NodeList parse(Node *parent, const QString &stopAt);
+  NodeList parse(Node *parent, const QString &stopAt, const Token &tagRef={});
 
   /**
     Returns the filter object called @p name or an invalid object if no filter
@@ -94,7 +94,7 @@ public:
     Advances the parser to the tag @p tag. This method is similar to @ref parse,
     but it does not create nodes for tags encountered.
   */
-  void skipPast(const QString &tag);
+  void skipPast(const QString &tag, const Token &refTag);
 
   /**
     Returns the next token to be processed by the parser. This can be examined

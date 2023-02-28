@@ -30,14 +30,14 @@ class LoadNodeFactory : public AbstractNodeFactory
 public:
   LoadNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class LoadNode : public Node
 {
   Q_OBJECT
 public:
-  LoadNode(QObject *parent = {});
+  LoadNode(const Grantlee::Token &token, QObject *parent = {});
 
   void render(OutputStream *stream, Context *c) const override;
 };

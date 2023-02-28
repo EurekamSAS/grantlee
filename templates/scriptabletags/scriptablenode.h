@@ -66,7 +66,7 @@ public:
   void setEngine(Grantlee::Engine *engine) override;
   void setFactory(const QJSValue &factoryMethod);
 
-  Node *getNode(const QString &tagContent, Parser *p = {}) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p = {}) const override;
 
 private:
   QJSEngine *m_scriptEngine;

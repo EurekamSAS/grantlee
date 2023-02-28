@@ -34,14 +34,17 @@
 
 I18npNodeFactory::I18npNodeFactory() = default;
 
-Node *I18npNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *I18npNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   if (expr.size() < 3)
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("Error: i18np tag takes at least two arguments"));
+        QStringLiteral("Error: i18np tag takes at least two arguments"),
+              tag.linenumber,
+              tag.columnnumber,
+              tag.content);
 
   auto sourceText = expr.at(1);
 
@@ -52,7 +55,10 @@ Node *I18npNodeFactory::getNode(const QString &tagContent, Parser *p) const
     throw Grantlee::Exception(
         TagSyntaxError,
         QStringLiteral(
-            "Error: i18np tag first argument must be a static string."));
+            "Error: i18np tag first argument must be a static string."),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
   sourceText = sourceText.mid(1, sourceText.size() - 2);
 
@@ -74,20 +80,23 @@ Node *I18npNodeFactory::getNode(const QString &tagContent, Parser *p) const
     feList.append(FilterExpression(expr.at(i), p));
   }
 
-  return new I18npNode(sourceText, pluralText, feList);
+  return new I18npNode(tag, sourceText, pluralText, feList);
 }
 
 I18npVarNodeFactory::I18npVarNodeFactory() = default;
 
-Grantlee::Node *I18npVarNodeFactory::getNode(const QString &tagContent,
+Grantlee::Node *I18npVarNodeFactory::getNode(const Grantlee::Token &tag,
                                              Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   if (expr.size() < 5)
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("Error: i18np_var tag takes at least four arguments"));
+        QStringLiteral("Error: i18np_var tag takes at least four arguments"),
+              tag.linenumber,
+              tag.columnnumber,
+              tag.content);
 
   auto sourceText = expr.at(1);
 
@@ -98,7 +107,10 @@ Grantlee::Node *I18npVarNodeFactory::getNode(const QString &tagContent,
     throw Grantlee::Exception(
         TagSyntaxError,
         QStringLiteral(
-            "Error: i18np tag first argument must be a static string."));
+            "Error: i18np tag first argument must be a static string."),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
   sourceText = sourceText.mid(1, sourceText.size() - 2);
 
@@ -122,13 +134,14 @@ Grantlee::Node *I18npVarNodeFactory::getNode(const QString &tagContent,
 
   auto resultName = expr.last();
 
-  return new I18npVarNode(sourceText, pluralText, feList, resultName);
+  return new I18npVarNode(tag, sourceText, pluralText, feList, resultName);
 }
 
-I18npNode::I18npNode(const QString &sourceText, const QString &pluralText,
+I18npNode::I18npNode(const Grantlee::Token &token,
+                     const QString &sourceText, const QString &pluralText,
                      const QList<Grantlee::FilterExpression> &feList,
                      QObject *parent)
-    : Node(parent), m_sourceText(sourceText), m_pluralText(pluralText),
+    : Node(token, parent), m_sourceText(sourceText), m_pluralText(pluralText),
       m_filterExpressionList(feList)
 {
 }
@@ -144,10 +157,11 @@ void I18npNode::render(OutputStream *stream, Context *c) const
   streamValueInContext(stream, resultString, c);
 }
 
-I18npVarNode::I18npVarNode(const QString &sourceText, const QString &pluralText,
+I18npVarNode::I18npVarNode(const Grantlee::Token &token,
+                           const QString &sourceText, const QString &pluralText,
                            const QList<Grantlee::FilterExpression> &feList,
                            const QString &resultName, QObject *parent)
-    : Node(parent), m_sourceText(sourceText), m_pluralText(pluralText),
+    : Node(token, parent), m_sourceText(sourceText), m_pluralText(pluralText),
       m_filterExpressionList(feList), m_resultName(resultName)
 {
 }

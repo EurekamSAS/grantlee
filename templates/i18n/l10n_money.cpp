@@ -29,14 +29,17 @@
 
 L10nMoneyNodeFactory::L10nMoneyNodeFactory() = default;
 
-Node *L10nMoneyNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *L10nMoneyNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   if (expr.size() < 2)
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("Error: l10n_money tag takes at least one argument"));
+        QStringLiteral("Error: l10n_money tag takes at least one argument"),
+              tag.linenumber,
+              tag.columnnumber,
+              tag.content);
 
   FilterExpression value(expr.at(1), p);
 
@@ -45,21 +48,24 @@ Node *L10nMoneyNodeFactory::getNode(const QString &tagContent, Parser *p) const
   if (expr.size() == 3)
     currency = FilterExpression(expr.at(2), p);
 
-  return new L10nMoneyNode(value, currency);
+  return new L10nMoneyNode(tag, value, currency);
 }
 
 L10nMoneyVarNodeFactory::L10nMoneyVarNodeFactory() = default;
 
-Grantlee::Node *L10nMoneyVarNodeFactory::getNode(const QString &tagContent,
+Grantlee::Node *L10nMoneyVarNodeFactory::getNode(const Grantlee::Token &tag,
                                                  Parser *p) const
 {
 
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   if (expr.size() < 4)
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("Error: l10n_money tag takes at least three arguments"));
+        QStringLiteral("Error: l10n_money tag takes at least three arguments"),
+              tag.linenumber,
+              tag.columnnumber,
+              tag.content);
 
   FilterExpression value(expr.at(1), p);
 
@@ -70,12 +76,12 @@ Grantlee::Node *L10nMoneyVarNodeFactory::getNode(const QString &tagContent,
 
   auto resultName = expr.last();
 
-  return new L10nMoneyVarNode(value, currency, resultName);
+  return new L10nMoneyVarNode(tag, value, currency, resultName);
 }
 
-L10nMoneyNode::L10nMoneyNode(const FilterExpression &value,
+L10nMoneyNode::L10nMoneyNode(const Grantlee::Token& token, const FilterExpression &value,
                              const FilterExpression &currency, QObject *parent)
-    : Node(parent), m_value(value), m_currency(currency)
+    : Node(token, parent), m_value(value), m_currency(currency)
 {
 }
 
@@ -88,10 +94,11 @@ void L10nMoneyNode::render(OutputStream *stream, Context *c) const
   streamValueInContext(stream, resultString, c);
 }
 
-L10nMoneyVarNode::L10nMoneyVarNode(const FilterExpression &value,
+L10nMoneyVarNode::L10nMoneyVarNode(const Grantlee::Token &token,
+                                   const FilterExpression &value,
                                    const FilterExpression &currency,
                                    const QString &resultName, QObject *parent)
-    : Node(parent), m_value(value), m_currency(currency),
+    : Node(token, parent), m_value(value), m_currency(currency),
       m_resultName(resultName)
 {
 }

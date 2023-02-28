@@ -30,16 +30,18 @@ class RangeNodeFactory : public AbstractNodeFactory
 public:
   RangeNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class RangeNode : public Node
 {
   Q_OBJECT
 public:
-  RangeNode(const QString &name, const FilterExpression &startExpression,
+  RangeNode(const Grantlee::Token &token,
+            const QString &name, const FilterExpression &startExpression,
             const FilterExpression &stopExpression, QObject *parent = {});
-  RangeNode(const QString &name, const FilterExpression &startExpression,
+  RangeNode(const Grantlee::Token &token,
+            const QString &name, const FilterExpression &startExpression,
             const FilterExpression &stopExpression,
             const FilterExpression &stepExpression = {}, QObject *parent = {});
 

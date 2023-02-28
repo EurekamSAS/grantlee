@@ -27,10 +27,10 @@
 
 FilterNodeFactory::FilterNodeFactory() = default;
 
-Grantlee::Node *FilterNodeFactory::getNode(const QString &tagContent,
+Grantlee::Node *FilterNodeFactory::getNode(const Grantlee::Token &tag,
                                            Grantlee::Parser *p) const
 {
-  auto expr = tagContent.split(QLatin1Char(' '),
+  auto expr = tag.content.split(QLatin1Char(' '),
 #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
                                QString::SkipEmptyParts
 #else
@@ -47,20 +47,23 @@ Grantlee::Node *FilterNodeFactory::getNode(const QString &tagContent,
   if (filters.contains(QStringLiteral("safe"))
       || filters.contains(QStringLiteral("escape"))) {
     throw Grantlee::Exception(
-        TagSyntaxError, QStringLiteral("Use the \"autoescape\" tag instead."));
+        TagSyntaxError, QStringLiteral("Use the \"autoescape\" tag instead."),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
 
-  auto n = new FilterNode(fe, p);
+  auto n = new FilterNode(tag, fe, p);
 
-  auto filterNodes = p->parse(n, QStringLiteral("endfilter"));
+  auto filterNodes = p->parse(n, QStringLiteral("endfilter"), tag);
   p->removeNextToken();
 
   n->setNodeList(filterNodes);
   return n;
 }
 
-FilterNode::FilterNode(const FilterExpression &fe, QObject *parent)
-    : Node(parent), m_fe(fe)
+FilterNode::FilterNode(const Grantlee::Token &token, const FilterExpression &fe, QObject *parent)
+    : Node(token, parent), m_fe(fe)
 {
 }
 

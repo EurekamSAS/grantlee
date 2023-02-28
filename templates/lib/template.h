@@ -130,6 +130,10 @@ public:
   */
   QString errorString() const;
 
+  int errorLine() const;
+  int errorColumn() const;
+  QString errorTokenContent() const;
+
   /**
     Returns the Engine that created this **%Template**.
   */

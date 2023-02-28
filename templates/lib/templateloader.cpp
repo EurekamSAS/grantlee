@@ -215,7 +215,8 @@ Template InMemoryTemplateLoader::loadByName(const QString &name,
   throw Grantlee::Exception(
       TagSyntaxError,
       QStringLiteral("Couldn't load template %1. Template does not exist.")
-          .arg(name));
+          .arg(name),
+              -1,-1,QString());
 }
 
 QPair<QString, QString>

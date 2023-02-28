@@ -26,9 +26,9 @@
 
 IfChangedNodeFactory::IfChangedNodeFactory() = default;
 
-Node *IfChangedNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *IfChangedNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = tagContent.split(QLatin1Char(' '),
+  auto expr = tag.content.split(QLatin1Char(' '),
 #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
                                QString::SkipEmptyParts
 #else
@@ -37,15 +37,15 @@ Node *IfChangedNodeFactory::getNode(const QString &tagContent, Parser *p) const
   );
 
   expr.takeAt(0);
-  auto n = new IfChangedNode(getFilterExpressionList(expr, p), p);
+  auto n = new IfChangedNode(tag, getFilterExpressionList(expr, p), p);
 
   auto trueList
-      = p->parse(n, {QStringLiteral("else"), QStringLiteral("endifchanged")});
+      = p->parse(n, {QStringLiteral("else"), QStringLiteral("endifchanged")}, tag);
   n->setTrueList(trueList);
   NodeList falseList;
 
   if (p->takeNextToken().content == QStringLiteral("else")) {
-    falseList = p->parse(n, QStringLiteral("endifchanged"));
+    falseList = p->parse(n, QStringLiteral("endifchanged"), tag);
     n->setFalseList(falseList);
     p->removeNextToken();
   }
@@ -53,9 +53,10 @@ Node *IfChangedNodeFactory::getNode(const QString &tagContent, Parser *p) const
   return n;
 }
 
-IfChangedNode::IfChangedNode(const QList<FilterExpression> &feList,
+IfChangedNode::IfChangedNode(const Grantlee::Token &token,
+                             const QList<FilterExpression> &feList,
                              QObject *parent)
-    : Node(parent), m_filterExpressions(feList)
+    : Node(token, parent), m_filterExpressions(feList)
 {
   m_lastSeen = QVariant();
   m_id = QString::number(reinterpret_cast<qint64>(this));

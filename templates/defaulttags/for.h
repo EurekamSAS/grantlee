@@ -31,7 +31,7 @@ class ForNodeFactory : public AbstractNodeFactory
 public:
   ForNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class ForNode : public Node
@@ -40,7 +40,7 @@ class ForNode : public Node
 public:
   enum Reversed { IsNotReversed, IsReversed };
 
-  ForNode(const QStringList &loopVars, const FilterExpression &fe, int reversed,
+  ForNode(const Grantlee::Token &token, const QStringList &loopVars, const FilterExpression &fe, int reversed,
           QObject *parent = {});
 
   void setLoopList(const NodeList &loopNodeList);

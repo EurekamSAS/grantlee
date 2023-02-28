@@ -24,13 +24,13 @@
 
 DebugNodeFactory::DebugNodeFactory() = default;
 
-Node *DebugNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *DebugNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  Q_UNUSED(tagContent)
-  return new DebugNode(p);
+  Q_UNUSED(tag.content)
+  return new DebugNode(tag, p);
 }
 
-DebugNode::DebugNode(QObject *parent) : Node(parent) {}
+DebugNode::DebugNode(const Grantlee::Token &token, QObject *parent) : Node(token, parent) {}
 
 void DebugNode::render(OutputStream *stream, Context *c) const
 {

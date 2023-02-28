@@ -48,7 +48,7 @@ public:
     Parses the template to create a Nodelist.
     The given @p parent is the parent of each node in the returned list.
   */
-  NodeList parse(QObject *parent, const QStringList &stopAt);
+  NodeList parse(QObject *parent, const QStringList &stopAt, const Token &tagRef={});
 
   void openLibrary(TagLibraryInterface *library);
   Q_DECLARE_PUBLIC(Parser)
@@ -134,14 +134,17 @@ NodeList ParserPrivate::extendNodeList(NodeList list, Node *node)
     throw Grantlee::Exception(
         TagSyntaxError,
         QStringLiteral("Node appeared twice in template: %1")
-            .arg(QLatin1String(node->metaObject()->className())));
+            .arg(QLatin1String(node->metaObject()->className())),
+                  node->token().linenumber,
+                  node->token().columnnumber,
+                  node->token().content);
   }
 
   list.append(node);
   return list;
 }
 
-void Parser::skipPast(const QString &tag)
+void Parser::skipPast(const QString &tag, const Token &tagRef)
 {
   while (hasNextToken()) {
     const auto token = takeNextToken();
@@ -150,7 +153,10 @@ void Parser::skipPast(const QString &tag)
   }
   throw Grantlee::Exception(
       UnclosedBlockTagError,
-      QStringLiteral("No closing tag found for %1").arg(tag));
+      QStringLiteral("No closing tag found for %1").arg(tag),
+          tagRef.linenumber,
+          tagRef.columnnumber,
+          tagRef.content);
 }
 
 QSharedPointer<Filter> Parser::getFilter(const QString &name) const
@@ -161,28 +167,31 @@ QSharedPointer<Filter> Parser::getFilter(const QString &name) const
     return it.value();
   }
   throw Grantlee::Exception(UnknownFilterError,
-                            QStringLiteral("Unknown filter: %1").arg(name));
+                            QStringLiteral("Unknown filter: %1").arg(name),
+                            -1,
+                            -1,
+                            QString());
 }
 
-NodeList Parser::parse(Node *parent, const QString &stopAt)
+NodeList Parser::parse(Node *parent, const QString &stopAt, const Token &tagRef)
 {
   Q_D(Parser);
-  return d->parse(parent, {stopAt});
+  return d->parse(parent, {stopAt}, tagRef);
 }
 
-NodeList Parser::parse(TemplateImpl *parent, const QStringList &stopAt)
+NodeList Parser::parse(TemplateImpl *parent, const QStringList &stopAt, const Token &tagRef)
 {
   Q_D(Parser);
-  return d->parse(parent, stopAt);
+  return d->parse(parent, stopAt, tagRef);
 }
 
-NodeList Parser::parse(Node *parent, const QStringList &stopAt)
+NodeList Parser::parse(Node *parent, const QStringList &stopAt, const Token &tagRef)
 {
   Q_D(Parser);
-  return d->parse(parent, stopAt);
+  return d->parse(parent, stopAt, tagRef);
 }
 
-NodeList ParserPrivate::parse(QObject *parent, const QStringList &stopAt)
+NodeList ParserPrivate::parse(QObject *parent, const QStringList &stopAt, const Token &tagRef)
 {
   Q_Q(Parser);
   NodeList nodeList;
@@ -190,17 +199,21 @@ NodeList ParserPrivate::parse(QObject *parent, const QStringList &stopAt)
   while (q->hasNextToken()) {
     const auto token = q->takeNextToken();
     if (token.tokenType == TextToken) {
-      nodeList = extendNodeList(nodeList, new TextNode(token.content, parent));
+      nodeList = extendNodeList(nodeList, new TextNode(token, parent));
     } else if (token.tokenType == VariableToken) {
       if (token.content.isEmpty()) {
         // Error. Empty variable
         QString message;
         Q_ASSERT(q->hasNextToken());
-        message = QStringLiteral("Empty variable before \"%1\", line %2, %3")
+        message = QStringLiteral("Empty variable before \"%1\", line %2, column %3 %4")
                       .arg(q->takeNextToken().content.left(20))
                       .arg(token.linenumber)
+                      .arg(token.columnnumber)
                       .arg(q->parent()->objectName());
-        throw Grantlee::Exception(EmptyVariableError, message);
+        throw Grantlee::Exception(EmptyVariableError, message,
+                                  token.linenumber,
+                                  token.columnnumber,
+                                  token.content);
       }
 
       FilterExpression filterExpression;
@@ -208,14 +221,18 @@ NodeList ParserPrivate::parse(QObject *parent, const QStringList &stopAt)
         filterExpression = FilterExpression(token.content, q);
       } catch (const Grantlee::Exception &e) {
         throw Grantlee::Exception(e.errorCode(),
-                                  QStringLiteral("%1, line %2, %3")
+                                  QStringLiteral("%1, line %2, column %3, %4")
                                       .arg(e.what())
                                       .arg(token.linenumber)
-                                      .arg(q->parent()->objectName()));
+                                      .arg(token.columnnumber)
+                                      .arg(q->parent()->objectName()),
+                                  token.linenumber,
+                                  token.columnnumber,
+                                  token.content);
       }
 
       nodeList = extendNodeList(nodeList,
-                                new VariableNode(filterExpression, parent));
+                                new VariableNode(filterExpression, token, parent));
     } else {
       Q_ASSERT(token.tokenType == BlockToken);
       const auto command = token.content.section(QLatin1Char(' '), 0, 0);
@@ -230,11 +247,15 @@ NodeList ParserPrivate::parse(QObject *parent, const QStringList &stopAt)
       if (command.isEmpty()) {
         QString message;
         Q_ASSERT(q->hasNextToken());
-        message = QStringLiteral("Empty block tag before \"%1\", line %2, %3")
+        message = QStringLiteral("Empty block tag before \"%1\", line %2, colmun %3, %4")
                       .arg(token.content.left(20))
                       .arg(token.linenumber)
+                      .arg(token.columnnumber)
                       .arg(q->parent()->objectName());
-        throw Grantlee::Exception(EmptyBlockTagError, message);
+        throw Grantlee::Exception(EmptyBlockTagError, message,
+                                  token.linenumber,
+                                  token.columnnumber,
+                                  token.content);
       }
 
       auto nodeFactory = m_nodeFactories[command];
@@ -247,21 +268,29 @@ NodeList ParserPrivate::parse(QObject *parent, const QStringList &stopAt)
       // TODO: Make getNode take a Token instead?
       Node *n;
       try {
-        n = nodeFactory->getNode(token.content, q);
+        n = nodeFactory->getNode(token, q);
       } catch (const Grantlee::Exception &e) {
         throw Grantlee::Exception(e.errorCode(),
-                                  QStringLiteral("%1, line %2, %3")
+                                  QStringLiteral("%1, line %2, column %3 %4")
                                       .arg(e.what())
                                       .arg(token.linenumber)
-                                      .arg(q->parent()->objectName()));
+                                      .arg(token.columnnumber)
+                                      .arg(q->parent()->objectName()),
+                                  token.linenumber,
+                                  token.columnnumber,
+                                  token.content);
       }
       if (!n) {
         throw Grantlee::Exception(
             EmptyBlockTagError,
-            QStringLiteral("Failed to get node from %1, line %2, %3")
+            QStringLiteral("Failed to get node from %1, line %2,column %3, %4")
                 .arg(command)
                 .arg(token.linenumber)
-                .arg(q->parent()->objectName()));
+                .arg(token.columnnumber)
+                .arg(q->parent()->objectName()),
+                      token.linenumber,
+                      token.columnnumber,
+                      token.content);
       }
 
       n->setParent(parent);
@@ -275,7 +304,10 @@ NodeList ParserPrivate::parse(QObject *parent, const QStringList &stopAt)
         = QStringLiteral("Unclosed tag in template %1. Expected one of: (%2)")
               .arg(q->parent()->objectName(),
                    stopAt.join(QChar::fromLatin1(' ')));
-    throw Grantlee::Exception(UnclosedBlockTagError, message);
+    throw Grantlee::Exception(UnclosedBlockTagError, message,
+                              tagRef.linenumber,
+                              tagRef.columnnumber,
+                              tagRef.content);
   }
 
   return nodeList;
@@ -305,16 +337,24 @@ void Parser::invalidBlockTag(const Token &token, const QString &command,
   if (!stopAt.empty()) {
     throw Grantlee::Exception(
         InvalidBlockTagError,
-        QStringLiteral("Invalid block tag on line %1: '%2', expected '%3'")
+        QStringLiteral("Invalid block tag on line %1 column %2: '%3', expected '%4'")
             .arg(token.linenumber)
-            .arg(command, stopAt.join(QStringLiteral("', '"))));
+            .arg(token.columnnumber)
+            .arg(command, stopAt.join(QStringLiteral("', '"))),
+                  token.linenumber,
+                  token.columnnumber,
+                  token.content);
   }
   throw Grantlee::Exception(
       InvalidBlockTagError,
-      QStringLiteral("Invalid block tag on line %1: '%2\''. Did you forget "
+      QStringLiteral("Invalid block tag on line %1 column %2: '%3\''. Did you forget "
                      "to register or load this tag?")
           .arg(token.linenumber)
-          .arg(command));
+          .arg(token.columnnumber)
+          .arg(command),
+          token.linenumber,
+          token.columnnumber,
+          token.content);
 }
 
 void Parser::prependToken(const Token &token)

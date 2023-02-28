@@ -30,7 +30,7 @@
 #include "scriptableparser.h"
 
 ScriptableNode::ScriptableNode(QObject *parent)
-    : Node(parent), m_scriptEngine(nullptr)
+    : Node(Grantlee::Token(), parent), m_scriptEngine(nullptr)
 {
 }
 
@@ -82,20 +82,23 @@ void ScriptableNodeFactory::setFactory(const QJSValue &factoryMethod)
   m_factoryMethod = factoryMethod;
 }
 
-Node *ScriptableNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *ScriptableNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
   auto sp = new ScriptableParser(p, m_scriptEngine);
   auto parserObject = m_scriptEngine->newQObject(sp);
 
   QJSValueList args;
-  args << tagContent;
+  args << tag.content;
   args << parserObject;
 
   auto factory = m_factoryMethod;
 
   auto scriptNode = factory.callWithInstance(factory, args);
   if (scriptNode.isError())
-    throw Grantlee::Exception(TagSyntaxError, scriptNode.toString());
+    throw Grantlee::Exception(TagSyntaxError, scriptNode.toString(),
+                              tag.linenumber,
+                              tag.columnnumber,
+                              tag.content);
 
   auto node = qjsvalue_cast<Node *>(scriptNode);
   node->setParent(p);

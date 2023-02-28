@@ -154,7 +154,10 @@ void Engine::loadDefaultLibraries()
     d->loadCppLibrary( s_scriptableLibName, GRANTLEE_VERSION_MINOR );
     PluginPointer<TagLibraryInterface> library = d->loadCppLibrary( s_scriptableLibName, GRANTLEE_VERSION_MINOR );
     if ( !library )
-      throw Grantlee::Exception( TagSyntaxError, QStringLiteral("Could not load scriptable tags library") );
+      throw Grantlee::Exception( TagSyntaxError, QStringLiteral("Could not load scriptable tags library") ,
+                                 -1,
+                                 -1,
+                                 QString());
 #endif
   }
 #endif
@@ -214,7 +217,10 @@ TagLibraryInterface *Engine::loadLibrary(const QString &name)
   }
   throw Grantlee::Exception(
       TagSyntaxError,
-      QStringLiteral("Plugin library '%1' not found.").arg(name));
+      QStringLiteral("Plugin library '%1' not found.").arg(name),
+              -1,
+              -1,
+              QString());
   return nullptr;
 }
 

@@ -201,7 +201,7 @@ bool ScriptableTagLibrary::evaluateScript(const QString &name)
 
   QJSValue result = m_scriptEngine->evaluate(fileContent);
   if (result.isError())
-    throw Grantlee::Exception(TagSyntaxError, result.toString());
+    throw Grantlee::Exception(TagSyntaxError, result.toString(),-1,-1,QString());
 
   return true;
 }

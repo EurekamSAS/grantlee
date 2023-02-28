@@ -27,9 +27,9 @@
 
 NowNodeFactory::NowNodeFactory() = default;
 
-Node *NowNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *NowNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = tagContent.split(QLatin1Char('"'),
+  auto expr = tag.content.split(QLatin1Char('"'),
 #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
                                QString::KeepEmptyParts
 #else
@@ -39,16 +39,19 @@ Node *NowNodeFactory::getNode(const QString &tagContent, Parser *p) const
 
   if (expr.size() != 3) {
     throw Grantlee::Exception(TagSyntaxError,
-                              QStringLiteral("now tag takes one argument"));
+                              QStringLiteral("now tag takes one argument"),
+                              tag.linenumber,
+                              tag.columnnumber,
+                              tag.content);
   }
 
   auto formatString = expr.at(1);
 
-  return new NowNode(formatString, p);
+  return new NowNode(tag, formatString, p);
 }
 
-NowNode::NowNode(const QString &formatString, QObject *parent)
-    : Node(parent), m_formatString(formatString)
+NowNode::NowNode(const Grantlee::Token &token, const QString &formatString, QObject *parent)
+    : Node(token, parent), m_formatString(formatString)
 {
 }
 

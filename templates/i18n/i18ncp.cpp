@@ -34,14 +34,17 @@
 
 I18ncpNodeFactory::I18ncpNodeFactory() = default;
 
-Node *I18ncpNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *I18ncpNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   if (expr.size() < 4)
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("Error: i18ncp tag takes at least three arguments"));
+        QStringLiteral("Error: i18ncp tag takes at least three arguments"),
+              tag.linenumber,
+              tag.columnnumber,
+              tag.content);
 
   auto contextText = expr.at(1);
 
@@ -52,7 +55,10 @@ Node *I18ncpNodeFactory::getNode(const QString &tagContent, Parser *p) const
     throw Grantlee::Exception(
         TagSyntaxError,
         QStringLiteral(
-            "Error: i18ncp tag first argument must be a static string."));
+            "Error: i18ncp tag first argument must be a static string."),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
   contextText = contextText.mid(1, contextText.size() - 2);
 
@@ -65,7 +71,10 @@ Node *I18ncpNodeFactory::getNode(const QString &tagContent, Parser *p) const
     throw Grantlee::Exception(
         TagSyntaxError,
         QStringLiteral(
-            "Error: i18ncp tag second argument must be a static string."));
+            "Error: i18ncp tag second argument must be a static string."),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
   sourceText = sourceText.mid(1, sourceText.size() - 2);
 
@@ -87,20 +96,23 @@ Node *I18ncpNodeFactory::getNode(const QString &tagContent, Parser *p) const
     feList.append(FilterExpression(expr.at(i), p));
   }
 
-  return new I18ncpNode(contextText, sourceText, pluralText, feList);
+  return new I18ncpNode(tag, contextText, sourceText, pluralText, feList);
 }
 
 I18ncpVarNodeFactory::I18ncpVarNodeFactory() = default;
 
-Grantlee::Node *I18ncpVarNodeFactory::getNode(const QString &tagContent,
+Grantlee::Node *I18ncpVarNodeFactory::getNode(const Grantlee::Token &tag,
                                               Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   if (expr.size() < 6) {
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("Error: i18ncp_var tag takes at least five arguments"));
+        QStringLiteral("Error: i18ncp_var tag takes at least five arguments"),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
 
   auto contextText = expr.at(1);
@@ -112,7 +124,10 @@ Grantlee::Node *I18ncpVarNodeFactory::getNode(const QString &tagContent,
     throw Grantlee::Exception(
         TagSyntaxError,
         QStringLiteral(
-            "Error: i18ncp_var tag first argument must be a static string."));
+            "Error: i18ncp_var tag first argument must be a static string."),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
   contextText = contextText.mid(1, contextText.size() - 2);
 
@@ -125,7 +140,10 @@ Grantlee::Node *I18ncpVarNodeFactory::getNode(const QString &tagContent,
     throw Grantlee::Exception(
         TagSyntaxError,
         QStringLiteral(
-            "Error: i18ncp_var tag second argument must be a static string."));
+            "Error: i18ncp_var tag second argument must be a static string."),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
   sourceText = sourceText.mid(1, sourceText.size() - 2);
 
@@ -149,15 +167,16 @@ Grantlee::Node *I18ncpVarNodeFactory::getNode(const QString &tagContent,
 
   auto resultName = expr.last();
 
-  return new I18ncpVarNode(contextText, sourceText, pluralText, feList,
+  return new I18ncpVarNode(tag, contextText, sourceText, pluralText, feList,
                            resultName);
 }
 
-I18ncpNode::I18ncpNode(const QString &contextText, const QString &sourceText,
+I18ncpNode::I18ncpNode(const Grantlee::Token &token,
+                       const QString &contextText, const QString &sourceText,
                        const QString &pluralText,
                        const QList<Grantlee::FilterExpression> &feList,
                        QObject *parent)
-    : Node(parent), m_contextText(contextText), m_sourceText(sourceText),
+    : Node(token, parent), m_contextText(contextText), m_sourceText(sourceText),
       m_pluralText(pluralText), m_filterExpressionList(feList)
 {
 }
@@ -173,12 +192,13 @@ void I18ncpNode::render(OutputStream *stream, Context *c) const
   streamValueInContext(stream, resultString, c);
 }
 
-I18ncpVarNode::I18ncpVarNode(const QString &contextText,
+I18ncpVarNode::I18ncpVarNode(const Grantlee::Token &token,
+                             const QString &contextText,
                              const QString &sourceText,
                              const QString &pluralText,
                              const QList<Grantlee::FilterExpression> &feList,
                              const QString &resultName, QObject *parent)
-    : Node(parent), m_contextText(contextText), m_sourceText(sourceText),
+    : Node(token, parent), m_contextText(contextText), m_sourceText(sourceText),
       m_pluralText(pluralText), m_filterExpressionList(feList),
       m_resultName(resultName)
 {

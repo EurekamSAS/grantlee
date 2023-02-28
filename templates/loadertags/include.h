@@ -36,14 +36,14 @@ class IncludeNodeFactory : public AbstractNodeFactory
 public:
   IncludeNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class IncludeNode : public Node
 {
   Q_OBJECT
 public:
-  explicit IncludeNode(const FilterExpression &fe, QObject *parent = {});
+  explicit IncludeNode(const Grantlee::Token& token, const FilterExpression &fe, QObject *parent = {});
   void render(OutputStream *stream, Context *c) const override;
 
 private:
@@ -54,7 +54,7 @@ class ConstantIncludeNode : public Node
 {
   Q_OBJECT
 public:
-  ConstantIncludeNode(const QString &filename, QObject *parent = {});
+  ConstantIncludeNode(const Grantlee::Token &token, const QString filename, QObject *parent = {});
   void render(OutputStream *stream, Context *c) const override;
 
 private:

@@ -31,7 +31,7 @@ class WithNodeFactory : public AbstractNodeFactory
 public:
   WithNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class WithNode : public Node
@@ -39,6 +39,7 @@ class WithNode : public Node
   Q_OBJECT
 public:
   WithNode(
+      const Grantlee::Token &token,
       const std::vector<std::pair<QString, FilterExpression>> &namedExpressions,
       QObject *parent = {});
 

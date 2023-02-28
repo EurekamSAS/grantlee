@@ -28,6 +28,7 @@
 #include "grantlee_templates_export.h"
 #include "outputstream.h"
 #include "safestring.h"
+#include "token.h"
 
 #include <QtCore/QStringList>
 
@@ -88,7 +89,7 @@ public:
 
     @param parent The parent QObject
   */
-  explicit Node(QObject *parent = {});
+    explicit Node(const Grantlee::Token &token, QObject *parent = {});
 
   /**
     Destructor.
@@ -101,6 +102,8 @@ public:
     This will also involve calling render on and child nodes.
   */
   virtual void render(OutputStream *stream, Context *c) const = 0;
+
+  const Grantlee::Token& token()const;
 
 #ifndef Q_QDOC
   /**
@@ -249,7 +252,7 @@ class AbstractNodeFactoryPrivate;
   arguments processed and a Node created
 
   @code
-    Node* SomeTagFactory::getNode(const QString &tagContent, Parser *p) {
+    Node* SomeTagFactory::getNode(const Grantlee::Token &tag, Parser *p) {
       QStringList parts = smartSplit( tagContent );
 
       parts.removeFirst(); // Remove the "some_tag" part.
@@ -279,7 +282,7 @@ class AbstractNodeFactoryPrivate;
   The implementation could look like
 
   @code
-    Node* SomeOtherTagFactory::getNode(const QString &tagContent, Parser *p) {
+    Node* SomeOtherTagFactory::getNode(const Grantlee::Token &tag, Parser *p) {
       QStringList parts = smartSplit( tagContent );
 
       parts.removeFirst(); // Remove the "times" part.
@@ -331,7 +334,7 @@ public:
 
     @see tags
   */
-  virtual Node *getNode(const QString &tagContent, Parser *p) const = 0;
+  virtual Node *getNode(const Grantlee::Token &tag, Parser *p) const = 0;
 
 #ifndef Q_QDOC
   /**

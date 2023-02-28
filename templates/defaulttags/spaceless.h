@@ -31,14 +31,14 @@ class SpacelessNodeFactory : public AbstractNodeFactory
 public:
   SpacelessNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class SpacelessNode : public Node
 {
   Q_OBJECT
 public:
-  SpacelessNode(QObject *parent = {});
+  SpacelessNode(const Grantlee::Token &token, QObject *parent = {});
 
   void setList(const NodeList &nodeList);
 

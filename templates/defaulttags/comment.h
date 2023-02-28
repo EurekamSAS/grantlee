@@ -31,14 +31,14 @@ class CommentNodeFactory : public AbstractNodeFactory
 public:
   CommentNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class CommentNode : public Node
 {
   Q_OBJECT
 public:
-  CommentNode(QObject *parent = {});
+  CommentNode(const Grantlee::Token &token, QObject *parent = {});
 
   void render(OutputStream *stream, Context *c) const override;
 };

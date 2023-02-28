@@ -28,15 +28,15 @@
 
 ForNodeFactory::ForNodeFactory() = default;
 
-Node *ForNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *ForNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   if (expr.size() < 4) {
     throw Grantlee::Exception(
         TagSyntaxError,
         QStringLiteral("'for' statements should have at least four words: %1")
-            .arg(tagContent));
+            .arg(tag.content),tag.linenumber,tag.columnnumber,tag.content);
   }
 
   expr.takeAt(0);
@@ -52,7 +52,7 @@ Node *ForNodeFactory::getNode(const QString &tagContent, Parser *p) const
     throw Grantlee::Exception(
         TagSyntaxError,
         QStringLiteral("'for' statements should use the form 'for x in y': %1")
-            .arg(tagContent));
+            .arg(tag.content),tag.linenumber,tag.columnnumber,tag.content);
   }
 
   for (const QString &arg : expr.mid(0, expr.size() - 2)) {
@@ -69,20 +69,23 @@ Node *ForNodeFactory::getNode(const QString &tagContent, Parser *p) const
     if (var.isEmpty())
       throw Grantlee::Exception(
           TagSyntaxError,
-          QStringLiteral("'for' tag received invalid argument"));
+          QStringLiteral("'for' tag received invalid argument"),
+                tag.linenumber,
+                tag.columnnumber,
+                tag.content);
   }
 
   FilterExpression fe(expr.last(), p);
 
-  auto n = new ForNode(vars, fe, reversed, p);
+  auto n = new ForNode(tag, vars, fe, reversed, p);
 
   auto loopNodes
-      = p->parse(n, {QStringLiteral("empty"), QStringLiteral("endfor")});
+      = p->parse(n, {QStringLiteral("empty"), QStringLiteral("endfor")}, tag);
   n->setLoopList(loopNodes);
 
   NodeList emptyNodes;
   if (p->takeNextToken().content == QStringLiteral("empty")) {
-    emptyNodes = p->parse(n, QStringLiteral("endfor"));
+    emptyNodes = p->parse(n, QStringLiteral("endfor"), tag);
     n->setEmptyList(emptyNodes);
     // skip past the endfor tag
     p->removeNextToken();
@@ -91,9 +94,10 @@ Node *ForNodeFactory::getNode(const QString &tagContent, Parser *p) const
   return n;
 }
 
-ForNode::ForNode(const QStringList &loopVars, const FilterExpression &fe,
+ForNode::ForNode(const Grantlee::Token &token,
+                 const QStringList &loopVars, const FilterExpression &fe,
                  int reversed, QObject *parent)
-    : Node(parent), m_loopVars(loopVars), m_filterExpression(fe),
+    : Node(token, parent), m_loopVars(loopVars), m_filterExpression(fe),
       m_isReversed(reversed)
 {
 }

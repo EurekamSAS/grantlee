@@ -48,6 +48,7 @@ enum TokenType {
 struct Token {
   int tokenType;   ///< The Type of this Token
   int linenumber;  ///< The line number this Token starts at
+  int columnnumber;///< The colmun number this Token starts at
   QString content; ///< The content of this Token
 };
 }

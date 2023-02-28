@@ -26,23 +26,23 @@
 
 FirstOfNodeFactory::FirstOfNodeFactory() = default;
 
-Node *FirstOfNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *FirstOfNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   const auto tagName = expr.takeAt(0);
 
   if (expr.isEmpty()) {
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("%1 expects at least one argument").arg(tagName));
+        QStringLiteral("%1 expects at least one argument"),tag.linenumber,tag.columnnumber,tag.content);
   }
 
-  return new FirstOfNode(getFilterExpressionList(expr, p), p);
+  return new FirstOfNode(tag, getFilterExpressionList(expr, p), p);
 }
 
-FirstOfNode::FirstOfNode(const QList<FilterExpression> &list, QObject *parent)
-    : Node(parent), m_variableList(list)
+FirstOfNode::FirstOfNode(const Grantlee::Token &token, const QList<FilterExpression> &list, QObject *parent)
+    : Node(token, parent), m_variableList(list)
 {
 }
 

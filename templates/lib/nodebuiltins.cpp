@@ -22,13 +22,13 @@
 
 using namespace Grantlee;
 
-TextNode::TextNode(const QString &content, QObject *parent)
-    : Node(parent), m_content(content)
+TextNode::TextNode(const Grantlee::Token& token, QObject *parent)
+    : Node(token, parent), m_content(token.content)
 {
 }
 
-VariableNode::VariableNode(const FilterExpression &fe, QObject *parent)
-    : Node(parent), m_filterExpression(fe)
+VariableNode::VariableNode(const FilterExpression &fe, const Grantlee::Token& token, QObject *parent)
+    : Node(token, parent), m_filterExpression(fe)
 {
 }
 

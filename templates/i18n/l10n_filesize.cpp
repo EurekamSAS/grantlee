@@ -30,15 +30,15 @@
 
 L10nFileSizeNodeFactory::L10nFileSizeNodeFactory() = default;
 
-Node *L10nFileSizeNodeFactory::getNode(const QString &tagContent,
+Node *L10nFileSizeNodeFactory::getNode(const Grantlee::Token &tag,
                                        Parser *p) const
 {
-  QStringList parts = smartSplit(tagContent);
+  QStringList parts = smartSplit(tag.content);
   parts.removeFirst(); // not interested in the name of the tag
   if (parts.isEmpty()) {
     throw Exception(TagSyntaxError,
                     QStringLiteral("Error: l10n_filesize requires at least the "
-                                   "file size as first parameter"));
+                                   "file size as first parameter"),tag.linenumber, tag.columnnumber, tag.content);
   }
 
   FilterExpression size(parts.at(0), p);
@@ -58,21 +58,21 @@ Node *L10nFileSizeNodeFactory::getNode(const QString &tagContent,
     multiplier = FilterExpression(parts.at(3), p);
   }
 
-  return new L10nFileSizeNode(size, unitSystem, precision, multiplier, p);
+  return new L10nFileSizeNode(tag, size, unitSystem, precision, multiplier, p);
 }
 
 L10nFileSizeVarNodeFactory::L10nFileSizeVarNodeFactory() = default;
 
-Node *L10nFileSizeVarNodeFactory::getNode(const QString &tagContent,
+Node *L10nFileSizeVarNodeFactory::getNode(const Grantlee::Token &tag,
                                           Parser *p) const
 {
-  QStringList parts = smartSplit(tagContent);
+  QStringList parts = smartSplit(tag.content);
   parts.removeFirst(); // not interested in the name of the tag
   if (parts.size() < 2) {
     throw Exception(
         TagSyntaxError,
         QStringLiteral("Error: l10n_filesize_var tag takes at least 2 "
-                       "arguments, the file size and the variable name"));
+                       "arguments, the file size and the variable name"),tag.linenumber, tag.columnnumber, tag.content);
   }
 
   FilterExpression size(parts.at(0), p);
@@ -94,16 +94,17 @@ Node *L10nFileSizeVarNodeFactory::getNode(const QString &tagContent,
 
   auto resultName = parts.last();
 
-  return new L10nFileSizeVarNode(size, unitSystem, precision, multiplier,
+  return new L10nFileSizeVarNode(tag, size, unitSystem, precision, multiplier,
                                  resultName, p);
 }
 
-L10nFileSizeNode::L10nFileSizeNode(const FilterExpression &size,
+L10nFileSizeNode::L10nFileSizeNode(const Grantlee::Token &token,
+                                   const FilterExpression &size,
                                    const FilterExpression &unitSystem,
                                    const FilterExpression &precision,
                                    const FilterExpression &multiplier,
                                    QObject *parent)
-    : Node(parent), m_size(size), m_unitSystem(unitSystem),
+    : Node(token, parent), m_size(size), m_unitSystem(unitSystem),
       m_precision(precision), m_multiplier(multiplier)
 {
 }
@@ -205,13 +206,14 @@ void L10nFileSizeNode::render(OutputStream *stream, Context *c) const
   streamValueInContext(stream, resultString, c);
 }
 
-L10nFileSizeVarNode::L10nFileSizeVarNode(const FilterExpression &size,
+L10nFileSizeVarNode::L10nFileSizeVarNode(const Grantlee::Token &token,
+                                         const FilterExpression &size,
                                          const FilterExpression &unitSystem,
                                          const FilterExpression &precision,
                                          const FilterExpression &multiplier,
                                          const QString &resultName,
                                          QObject *parent)
-    : Node(parent), m_size(size), m_unitSystem(unitSystem),
+    : Node(token, parent), m_size(size), m_unitSystem(unitSystem),
       m_precision(precision), m_multiplier(multiplier), m_resultName(resultName)
 {
 }

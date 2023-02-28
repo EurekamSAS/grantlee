@@ -71,9 +71,12 @@ enum Error {
   @code
     QStringList tagContents = smartSplit( tagContent );
 
-    if ( tagContents.size() != 2 )
+    if ( tag.content.size() != 2 )
       throw Grantlee::Exception( TagSyntaxError,
-        "Error: Include tag takes exactly one argument" );
+        "Error: Include tag takes exactly one argument" ,
+        tag.linenumber,
+        tag.columnnumber,
+        tag.content);
 
     // The item at index 0 in the list is the tag name, "include"
     QString includeName = tagContents.at( 1 );
@@ -88,8 +91,9 @@ public:
     Creates an exception for the error @p errorCode and the verbose
     message @p what
   */
-  Exception(Error errorCode, const QString &what)
-      : m_errorCode(errorCode), m_what(what)
+  Exception(Error errorCode, const QString &what, const int lineError, const int columnError, QString tokenContent)
+      : m_errorCode(errorCode), m_what(what),
+        m_line(lineError), m_column(columnError), m_tokenContent(tokenContent)
   {
   }
 
@@ -109,11 +113,37 @@ public:
     Returns the error code for the exception.
   */
   Error errorCode() const { return m_errorCode; }
+
+  /**
+    @internal
+
+    Returns the error line for the exception.
+  */
+  int errorLine() const { return m_line; }
+
+  /**
+    @internal
+
+    Returns the error column for the exception.
+  */
+  int errorColumn() const { return m_column; }
+
+  /**
+    @internal
+
+    Returns the error token content for the exception.
+  */
+  QString errorTokenContent() const { return m_tokenContent; }
+
+
 #endif
 
 private:
   Error m_errorCode;
   QString m_what;
+  int m_line;
+  int m_column;
+  QString m_tokenContent;
 };
 }
 

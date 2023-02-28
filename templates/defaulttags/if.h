@@ -33,23 +33,23 @@ class IfNodeFactory : public AbstractNodeFactory
 public:
   IfNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class IfToken;
 
-class IfNode : public Node
+class GRANTLEE_TEMPLATES_EXPORT IfNode : public Node
 {
   Q_OBJECT
 public:
-  IfNode(QObject *parent = {});
+  IfNode(const Grantlee::Token &token, QObject *parent = {});
 
   void
   setNodelistConditions(const QVector<QPair<QSharedPointer<IfToken>, NodeList>>
                             &conditionNodelists);
 
   void render(OutputStream *stream, Context *c) const override;
-
+  const QVector<QPair<QSharedPointer<IfToken>, NodeList>>  conditionNodeLists() const;
 private:
   QVector<QPair<QSharedPointer<IfToken>, NodeList>> mConditionNodelists;
 };

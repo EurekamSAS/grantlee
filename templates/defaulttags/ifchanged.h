@@ -31,14 +31,15 @@ class IfChangedNodeFactory : public AbstractNodeFactory
 public:
   IfChangedNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class IfChangedNode : public Node
 {
   Q_OBJECT
 public:
-  explicit IfChangedNode(const QList<FilterExpression> &feList,
+  explicit IfChangedNode(const Grantlee::Token &token,
+                         const QList<FilterExpression> &feList,
                          QObject *parent = {});
 
   void setTrueList(const NodeList &trueList);

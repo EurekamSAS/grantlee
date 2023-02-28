@@ -116,7 +116,10 @@ FilterExpression::FilterExpression(const QString &varString, Parser *parser)
         throw Grantlee::Exception(
             TagSyntaxError,
             QStringLiteral("Could not parse some characters: \"%1\"")
-                .arg(varString.mid(lastPos, pos)));
+                .arg(varString.mid(lastPos, pos)),
+                      0,
+                      pos,
+                      varString);
       }
 
       if (subString.startsWith(QLatin1Char(FILTER_SEPARATOR))) {
@@ -135,7 +138,10 @@ FilterExpression::FilterExpression(const QString &varString, Parser *parser)
           throw Grantlee::Exception(
               TagSyntaxError,
               QStringLiteral("Could not parse the remainder, %1 from %2")
-                  .arg(remainder, varString));
+                  .arg(remainder, varString),
+                      0,
+                      pos,
+                      varString);
         }
         subString = subString.right(ssSize - 1);
         const auto lastFilter = d->m_filters.size();
@@ -143,7 +149,10 @@ FilterExpression::FilterExpression(const QString &varString, Parser *parser)
           throw Grantlee::Exception(
               EmptyVariableError,
               QStringLiteral("Missing argument to filter: %1")
-                  .arg(d->m_filterNames[lastFilter - 1]));
+                  .arg(d->m_filterNames[lastFilter - 1]),
+                0,
+                pos,
+                varString);
 
         d->m_filters[lastFilter - 1].second = Variable(subString);
       } else {
@@ -160,7 +169,10 @@ FilterExpression::FilterExpression(const QString &varString, Parser *parser)
       throw Grantlee::Exception(
           TagSyntaxError,
           QStringLiteral("Could not parse the remainder, %1 from %2")
-              .arg(remainder, varString));
+              .arg(remainder, varString),
+                    0,
+                    pos,
+                    varString);
     }
   } catch (...) {
     delete d_ptr;

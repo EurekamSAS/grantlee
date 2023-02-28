@@ -62,7 +62,7 @@ class FilterExpressionPrivate;
   the AbstractNodeFactory implementation for the <tt>some_tag</tt> tag.
 
   @code
-    Node* SomeTagFactory::getNode(const QString &tagContent, Parser *p) const {
+    Node* SomeTagFactory::getNode(const Grantlee::Token &tag, Parser *p) const {
       auto parts = smartSplit( tagContent );
 
       parts.removeFirst(); // Remove the "some_tag" part.

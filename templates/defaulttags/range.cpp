@@ -27,10 +27,10 @@
 
 RangeNodeFactory::RangeNodeFactory() = default;
 
-Grantlee::Node *RangeNodeFactory::getNode(const QString &tagContent,
+Grantlee::Node *RangeNodeFactory::getNode(const Grantlee::Token &tag,
                                           Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   expr.takeAt(0);
   auto numArgs = expr.size();
@@ -38,12 +38,18 @@ Grantlee::Node *RangeNodeFactory::getNode(const QString &tagContent,
     if (numArgs <= 2) {
       throw Grantlee::Exception(
           TagSyntaxError,
-          QStringLiteral("'range' tag requires at least three arguments"));
+          QStringLiteral("'range' tag requires at least three arguments"),
+                    tag.linenumber,
+                    tag.columnnumber,
+                    tag.content);
     }
 
     if (expr.at(numArgs - 2) != QStringLiteral("as")) {
       throw Grantlee::Exception(
-          TagSyntaxError, QStringLiteral("Invalid arguments to 'range' tag"));
+          TagSyntaxError, QStringLiteral("Invalid arguments to 'range' tag"),
+                    tag.linenumber,
+                    tag.columnnumber,
+                    tag.content);
     }
   }
 
@@ -55,15 +61,15 @@ Grantlee::Node *RangeNodeFactory::getNode(const QString &tagContent,
 
   switch (numArgs) {
   case 1:
-    n = new RangeNode(name, FilterExpression(QChar::fromLatin1('0'), p),
+    n = new RangeNode(tag, name, FilterExpression(QChar::fromLatin1('0'), p),
                       FilterExpression(expr.first(), p), p);
     break;
   case 2:
-    n = new RangeNode(name, FilterExpression(expr.first(), p),
+    n = new RangeNode(tag, name, FilterExpression(expr.first(), p),
                       FilterExpression(expr.at(1), p), p);
     break;
   case 3:
-    n = new RangeNode(name, FilterExpression(expr.first(), p),
+    n = new RangeNode(tag, name, FilterExpression(expr.first(), p),
                       FilterExpression(expr.at(1), p),
                       FilterExpression(expr.at(2), p), p);
     break;
@@ -71,26 +77,28 @@ Grantlee::Node *RangeNodeFactory::getNode(const QString &tagContent,
     return nullptr;
   }
 
-  auto list = p->parse(n, QStringLiteral("endrange"));
+  auto list = p->parse(n, QStringLiteral("endrange"), tag);
   p->removeNextToken();
 
   n->setNodeList(list);
   return n;
 }
 
-RangeNode::RangeNode(const QString &name,
+RangeNode::RangeNode(const Grantlee::Token &token,
+                     const QString &name,
                      const FilterExpression &startExpression,
                      const FilterExpression &stopExpression, QObject *parent)
-    : Node(parent), m_name(name), m_startExpression(startExpression),
+    : Node(token, parent), m_name(name), m_startExpression(startExpression),
       m_stopExpression(stopExpression)
 {
 }
 
-RangeNode::RangeNode(const QString &name,
+RangeNode::RangeNode(const Grantlee::Token &token,
+                     const QString &name,
                      const FilterExpression &startExpression,
                      const FilterExpression &stopExpression,
                      const FilterExpression &stepExpression, QObject *parent)
-    : Node(parent), m_name(name), m_startExpression(startExpression),
+    : Node(token, parent), m_name(name), m_startExpression(startExpression),
       m_stopExpression(stopExpression), m_stepExpression(stepExpression)
 {
 }

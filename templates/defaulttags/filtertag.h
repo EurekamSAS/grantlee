@@ -30,14 +30,14 @@ class FilterNodeFactory : public AbstractNodeFactory
 public:
   FilterNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class FilterNode : public Node
 {
   Q_OBJECT
 public:
-  explicit FilterNode(const FilterExpression &fe, QObject *parent = {});
+  explicit FilterNode(const Grantlee::Token &token, const FilterExpression &fe, QObject *parent = {});
 
   void setNodeList(const NodeList &filterList);
 

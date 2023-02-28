@@ -34,9 +34,10 @@ namespace Grantlee
 
 class NodePrivate
 {
-  NodePrivate(Node *node) : q_ptr(node) {}
+  NodePrivate(Node *node, const Grantlee::Token token) : q_ptr(node), m_token(token) {}
   Q_DECLARE_PUBLIC(Node)
   Node *const q_ptr;
+  Grantlee::Token const m_token;
 };
 
 class AbstractNodeFactoryPrivate
@@ -81,9 +82,14 @@ public:
 };
 }
 
-Node::Node(QObject *parent) : QObject(parent), d_ptr(new NodePrivate(this)) {}
+Node::Node(const Grantlee::Token& token, QObject *parent) : QObject(parent), d_ptr(new NodePrivate(this, token)) {}
 
 Node::~Node() { delete d_ptr; }
+
+const Grantlee::Token& Node::token() const
+{
+    return d_ptr->m_token;
+}
 
 void Node::streamValueInContext(OutputStream *stream, const QVariant &input,
                                 Context *c) const

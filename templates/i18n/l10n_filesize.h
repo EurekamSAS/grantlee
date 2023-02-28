@@ -35,7 +35,7 @@ class L10nFileSizeNodeFactory : public AbstractNodeFactory
 public:
   L10nFileSizeNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class L10nFileSizeVarNodeFactory : public AbstractNodeFactory
@@ -44,14 +44,15 @@ class L10nFileSizeVarNodeFactory : public AbstractNodeFactory
 public:
   L10nFileSizeVarNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class L10nFileSizeNode : public Node
 {
   Q_OBJECT
 public:
-  L10nFileSizeNode(const FilterExpression &size,
+  L10nFileSizeNode(const Grantlee::Token &token,
+                   const FilterExpression &size,
                    const FilterExpression &unitSystem,
                    const FilterExpression &precision,
                    const FilterExpression &multiplier,
@@ -70,7 +71,8 @@ class L10nFileSizeVarNode : public Node
 {
   Q_OBJECT
 public:
-  L10nFileSizeVarNode(const FilterExpression &size,
+  L10nFileSizeVarNode(const Grantlee::Token &token,
+                      const FilterExpression &size,
                       const FilterExpression &unitSystem,
                       const FilterExpression &precision,
                       const FilterExpression &multiplier,

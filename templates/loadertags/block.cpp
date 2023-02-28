@@ -37,9 +37,9 @@ BlockNodeFactory::BlockNodeFactory(QObject *parent)
 {
 }
 
-Node *BlockNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *BlockNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  const auto expr = tagContent.split(QLatin1Char(' '),
+  const auto expr = tag.content.split(QLatin1Char(' '),
 #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
                                      QString::SkipEmptyParts
 #else
@@ -49,7 +49,10 @@ Node *BlockNodeFactory::getNode(const QString &tagContent, Parser *p) const
 
   if (expr.size() != 2) {
     throw Grantlee::Exception(TagSyntaxError,
-                              QStringLiteral("block tag takes one argument"));
+                              QStringLiteral("block tag takes one argument"),
+                              tag.linenumber,
+                              tag.columnnumber,
+                              tag.content);
   }
 
   const auto blockName = expr.at(1);
@@ -67,7 +70,10 @@ Node *BlockNodeFactory::getNode(const QString &tagContent, Parser *p) const
         throw Grantlee::Exception(
             TagSyntaxError,
             QStringLiteral("'block' tag with name '%1' appears more than once.")
-                .arg(blockName));
+                .arg(blockName),
+                      tag.linenumber,
+                      tag.columnnumber,
+                      tag.content);
       }
     }
   }
@@ -77,8 +83,8 @@ Node *BlockNodeFactory::getNode(const QString &tagContent, Parser *p) const
 
   p->setProperty(__loadedBlocks, loadedBlocksVariant);
 
-  auto n = new BlockNode(blockName, p);
-  const auto list = p->parse(n, QStringLiteral("endblock"));
+  auto n = new BlockNode(tag, blockName, p);
+  const auto list = p->parse(n, QStringLiteral("endblock"), tag);
 
   auto endBlock = p->takeNextToken();
   const QStringList acceptableBlocks{QStringLiteral("endblock"),
@@ -92,8 +98,8 @@ Node *BlockNodeFactory::getNode(const QString &tagContent, Parser *p) const
   return n;
 }
 
-BlockNode::BlockNode(const QString &name, QObject *parent)
-    : Node(parent), m_name(name), m_stream(nullptr)
+BlockNode::BlockNode(const Grantlee::Token &token, const QString &name, QObject *parent)
+    : Node(token, parent), m_name(name), m_stream(nullptr)
 {
   qRegisterMetaType<Grantlee::SafeString>("Grantlee::SafeString");
 }
@@ -126,7 +132,7 @@ void BlockNode::render(OutputStream *stream, Context *c) const
 
     const auto list = block->m_list;
 
-    block = new BlockNode(block->m_name, nullptr);
+    block = new BlockNode(block->token(), block->m_name, nullptr);
     block->setNodeList(list);
     block->m_context = c;
     block->m_stream = stream;

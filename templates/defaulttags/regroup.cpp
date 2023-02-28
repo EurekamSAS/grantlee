@@ -26,23 +26,32 @@
 
 RegroupNodeFactory::RegroupNodeFactory() = default;
 
-Node *RegroupNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *RegroupNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = tagContent.split(QLatin1Char(' '));
+  auto expr = tag.content.split(QLatin1Char(' '));
 
   if (expr.size() != 6) {
     throw Grantlee::Exception(
-        TagSyntaxError, QStringLiteral("widthratio takes five arguments"));
+        TagSyntaxError, QStringLiteral("widthratio takes five arguments"),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
   FilterExpression target(expr.at(1), p);
   if (expr.at(2) != QStringLiteral("by")) {
     throw Grantlee::Exception(TagSyntaxError,
-                              QStringLiteral("second argument must be 'by'"));
+                              QStringLiteral("second argument must be 'by'"),
+                              tag.linenumber,
+                              tag.columnnumber,
+                              tag.content);
   }
 
   if (expr.at(4) != QStringLiteral("as")) {
     throw Grantlee::Exception(TagSyntaxError,
-                              QStringLiteral("fourth argument must be 'as'"));
+                              QStringLiteral("fourth argument must be 'as'"),
+                              tag.linenumber,
+                              tag.columnnumber,
+                              tag.content);
   }
 
   FilterExpression expression(
@@ -50,13 +59,14 @@ Node *RegroupNodeFactory::getNode(const QString &tagContent, Parser *p) const
 
   auto name = expr.at(5);
 
-  return new RegroupNode(target, expression, name, p);
+  return new RegroupNode(tag, target, expression, name, p);
 }
 
-RegroupNode::RegroupNode(const FilterExpression &target,
+RegroupNode::RegroupNode(const Grantlee::Token &token,
+                         const FilterExpression &target,
                          const FilterExpression &expression,
                          const QString &varName, QObject *parent)
-    : Node(parent), m_target(target), m_expression(expression),
+    : Node(token, parent), m_target(target), m_expression(expression),
       m_varName(varName)
 {
 }

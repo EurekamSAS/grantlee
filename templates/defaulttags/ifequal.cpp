@@ -26,24 +26,27 @@
 
 IfEqualNodeFactory::IfEqualNodeFactory() = default;
 
-Node *IfEqualNodeFactory::do_getNode(const QString &tagContent, Parser *p,
+Node *IfEqualNodeFactory::do_getNode(const Grantlee::Token &tag, Parser *p,
                                      bool negate) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   if (expr.size() != 3) {
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("%1 tag takes two arguments.").arg(expr.first()));
+        QStringLiteral("%1 tag takes two arguments.").arg(expr.first()),
+        tag.linenumber,
+        tag.columnnumber,
+        tag.content);
   }
 
   FilterExpression val1(expr.at(1), p);
   FilterExpression val2(expr.at(2), p);
 
-  auto n = new IfEqualNode(val1, val2, negate, p);
+  auto n = new IfEqualNode(tag, val1, val2, negate, p);
 
   const QString endTag(QStringLiteral("end") + expr.first());
-  auto trueList = p->parse(n, {QStringLiteral("else"), endTag});
+  auto trueList = p->parse(n, {QStringLiteral("else"), endTag}, tag);
   n->setTrueList(trueList);
   NodeList falseList;
   if (p->takeNextToken().content == QStringLiteral("else")) {
@@ -55,23 +58,24 @@ Node *IfEqualNodeFactory::do_getNode(const QString &tagContent, Parser *p,
   return n;
 }
 
-Node *IfEqualNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *IfEqualNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 
 {
-  return do_getNode(tagContent, p, false);
+  return do_getNode(tag, p, false);
 }
 
 IfNotEqualNodeFactory::IfNotEqualNodeFactory() = default;
 
-Node *IfNotEqualNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *IfNotEqualNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  return do_getNode(tagContent, p, true);
+  return do_getNode(tag, p, true);
 }
 
-IfEqualNode::IfEqualNode(const FilterExpression &val1,
+IfEqualNode::IfEqualNode(const Grantlee::Token &token,
+                         const FilterExpression &val1,
                          const FilterExpression &val2, bool negate,
                          QObject *parent)
-    : Node(parent)
+    : Node(token, parent)
 {
   m_var1 = val1;
   m_var2 = val2;

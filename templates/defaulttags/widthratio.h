@@ -31,14 +31,15 @@ class WidthRatioNodeFactory : public AbstractNodeFactory
 public:
   WidthRatioNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class WidthRatioNode : public Node
 {
   Q_OBJECT
 public:
-  WidthRatioNode(const FilterExpression &valExpr,
+  WidthRatioNode(const Grantlee::Token &token,
+                 const FilterExpression &valExpr,
                  const FilterExpression &maxExpr,
                  const FilterExpression &maxWidth, QObject *parent = {});
 

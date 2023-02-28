@@ -31,10 +31,10 @@ class IfEqualNodeFactory : public AbstractNodeFactory
 public:
   IfEqualNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 
 protected:
-  Node *do_getNode(const QString &tagContent, Parser *p, bool negate) const;
+  Node *do_getNode(const Grantlee::Token &tag, Parser *p, bool negate) const;
 };
 
 class IfNotEqualNodeFactory : public IfEqualNodeFactory
@@ -43,14 +43,15 @@ class IfNotEqualNodeFactory : public IfEqualNodeFactory
 public:
   IfNotEqualNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class IfEqualNode : public Node
 {
   Q_OBJECT
 public:
-  IfEqualNode(const FilterExpression &val11, const FilterExpression &val2,
+  IfEqualNode(const Grantlee::Token &token,
+              const FilterExpression &val11, const FilterExpression &val2,
               bool negate, QObject *parent = {});
 
   void setTrueList(const NodeList &trueList);

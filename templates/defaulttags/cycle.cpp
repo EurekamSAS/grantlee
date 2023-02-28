@@ -29,14 +29,14 @@ static const char _namedCycleNodes[] = "_namedCycleNodes";
 
 CycleNodeFactory::CycleNodeFactory() = default;
 
-Node *CycleNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *CycleNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   if (expr.size() < 2) {
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("%1 expects at least one argument").arg(expr.first()));
+        QStringLiteral("%1 expects at least one argument").arg(expr.first()),tag.linenumber, tag.columnnumber, tag.content);
   }
 
   if (expr.at(1).contains(QLatin1Char(','))) {
@@ -56,12 +56,12 @@ Node *CycleNodeFactory::getNode(const QString &tagContent, Parser *p) const
       throw Grantlee::Exception(
           TagSyntaxError,
           QStringLiteral("No named cycles in template. '%1' is not defined")
-              .arg(name));
+              .arg(name),tag.linenumber, tag.columnnumber, tag.content);
     }
     auto hash = cycleNodes.value<QVariantHash>();
     if (!hash.contains(name)) {
       throw Grantlee::Exception(TagSyntaxError,
-                                QStringLiteral("Node not found: %1").arg(name));
+                                QStringLiteral("Node not found: %1").arg(name),tag.linenumber, tag.columnnumber, tag.content);
     }
     auto nodeVariant = hash.value(name);
     Q_ASSERT(nodeVariant.canConvert<Node *>());
@@ -73,7 +73,7 @@ Node *CycleNodeFactory::getNode(const QString &tagContent, Parser *p) const
     // {% cycle "foo" "bar" "bat" as var %}
     auto name = expr.at(exprSize - 1);
     auto list = expr.mid(1, exprSize - 3);
-    auto node = new CycleNode(getFilterExpressionList(list, p), name, p);
+    auto node = new CycleNode(tag, getFilterExpressionList(list, p), name, p);
     auto hashVariant = p->property(_namedCycleNodes);
     QVariantHash hash;
     if (hashVariant.userType() == qMetaTypeId<QVariantHash>()) {
@@ -84,12 +84,12 @@ Node *CycleNodeFactory::getNode(const QString &tagContent, Parser *p) const
     return node;
   }
   auto list = expr.mid(1, exprSize - 1);
-  return new CycleNode(getFilterExpressionList(list, p), QString(), p);
+  return new CycleNode(tag, getFilterExpressionList(list, p), QString(), p);
 }
 
-CycleNode::CycleNode(const QList<FilterExpression> &list, const QString &name,
+CycleNode::CycleNode(const Grantlee::Token &token, const QList<FilterExpression> &list, const QString &name,
                      QObject *parent)
-    : Node(parent), m_list(list), m_variableIterator(list), m_name(name)
+    : Node(token, parent), m_list(list), m_variableIterator(list), m_name(name)
 {
 }
 

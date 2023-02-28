@@ -26,10 +26,10 @@
 
 TemplateTagNodeFactory::TemplateTagNodeFactory() = default;
 
-Node *TemplateTagNodeFactory::getNode(const QString &tagContent,
+Node *TemplateTagNodeFactory::getNode(const Grantlee::Token &tag,
                                       Parser *p) const
 {
-  auto expr = tagContent.split(QLatin1Char(' '),
+  auto expr = tag.content.split(QLatin1Char(' '),
 #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
                                QString::SkipEmptyParts
 #else
@@ -40,21 +40,27 @@ Node *TemplateTagNodeFactory::getNode(const QString &tagContent,
   if (expr.isEmpty()) {
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("'templatetag' statement takes one argument"));
+        QStringLiteral("'templatetag' statement takes one argument"),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
 
   auto name = expr.first();
 
   if (!TemplateTagNode::isKeyword(name)) {
     throw Grantlee::Exception(TagSyntaxError,
-                              QStringLiteral("Not a template tag"));
+                              QStringLiteral("Not a template tag"),
+                              tag.linenumber,
+                              tag.columnnumber,
+                              tag.content);
   }
 
-  return new TemplateTagNode(name, p);
+  return new TemplateTagNode(tag, name, p);
 }
 
-TemplateTagNode::TemplateTagNode(const QString &name, QObject *parent)
-    : Node(parent)
+TemplateTagNode::TemplateTagNode(const Grantlee::Token &token, const QString &name, QObject *parent)
+    : Node(token, parent)
 {
   m_name = name;
 }

@@ -27,17 +27,17 @@
 
 SpacelessNodeFactory::SpacelessNodeFactory() = default;
 
-Node *SpacelessNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *SpacelessNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  Q_UNUSED(tagContent)
-  auto n = new SpacelessNode(p);
-  auto list = p->parse(n, QStringLiteral("endspaceless"));
+  Q_UNUSED(tag.content)
+  auto n = new SpacelessNode(tag, p);
+  auto list = p->parse(n, QStringLiteral("endspaceless"), tag);
   n->setList(list);
   p->removeNextToken();
   return n;
 }
 
-SpacelessNode::SpacelessNode(QObject *parent) : Node(parent) {}
+SpacelessNode::SpacelessNode(const Grantlee::Token &token, QObject *parent) : Node(token, parent) {}
 
 void SpacelessNode::setList(const NodeList &nodeList) { m_nodeList = nodeList; }
 

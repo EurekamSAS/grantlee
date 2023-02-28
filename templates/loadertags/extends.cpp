@@ -37,39 +37,48 @@ ExtendsNodeFactory::ExtendsNodeFactory(QObject *parent)
 {
 }
 
-Node *ExtendsNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *ExtendsNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  const auto expr = smartSplit(tagContent);
+  const auto expr = smartSplit(tag.content);
 
   if (expr.size() != 2)
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("Error: Include tag takes only one argument"));
+        QStringLiteral("Error: Include tag takes only one argument"),
+              tag.linenumber,
+              tag.columnnumber,
+              tag.content);
 
   FilterExpression fe(expr.at(1), p);
 
-  auto n = new ExtendsNode(fe, p);
+  auto n = new ExtendsNode(tag, fe, p);
 
   auto t = qobject_cast<TemplateImpl *>(p->parent());
 
   if (!t)
     throw Grantlee::Exception(
-        TagSyntaxError, QStringLiteral("Extends tag is not in a template."));
+        TagSyntaxError, QStringLiteral("Extends tag is not in a template."),
+              tag.linenumber,
+              tag.columnnumber,
+              tag.content);
 
-  const auto nodeList = p->parse(t);
+  const auto nodeList = p->parse(t, {},tag);
   n->setNodeList(nodeList);
 
   if (t->findChildren<ExtendsNode *>().size() > 1) {
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("Extends tag may only appear once in a template."));
+        QStringLiteral("Extends tag may only appear once in a template."),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
 
   return n;
 }
 
-ExtendsNode::ExtendsNode(const FilterExpression &fe, QObject *parent)
-    : Node(parent), m_filterExpression(fe)
+ExtendsNode::ExtendsNode(const Grantlee::Token &token, const FilterExpression &fe, QObject *parent)
+    : Node(token, parent), m_filterExpression(fe)
 {
 }
 
@@ -113,10 +122,10 @@ Template ExtendsNode::getParent(Context *c) const
   if (!t)
     throw Grantlee::Exception(
         TagSyntaxError,
-        QStringLiteral("Template not found %1").arg(parentName));
+        QStringLiteral("Template not found %1").arg(parentName),-1,-1,QString());
 
   if (t->error())
-    throw Grantlee::Exception(t->error(), t->errorString());
+    throw Grantlee::Exception(t->error(), t->errorString(),-1,-1,QString());
 
   return t;
 }
@@ -127,7 +136,7 @@ void ExtendsNode::render(OutputStream *stream, Context *c) const
 
   if (!parentTemplate) {
     throw Grantlee::Exception(TagSyntaxError,
-                              QStringLiteral("Cannot load template."));
+                              QStringLiteral("Cannot load template."),-1,-1,QString());
   }
 
   QVariant &variant = c->renderContext()->data(nullptr);

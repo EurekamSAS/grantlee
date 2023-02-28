@@ -25,9 +25,9 @@
 
 WithNodeFactory::WithNodeFactory() = default;
 
-Node *WithNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *WithNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
   std::vector<std::pair<QString, FilterExpression>> namedExpressions;
 
   if (expr.size() != 4 || expr.at(2) != QStringLiteral("as")) {
@@ -49,24 +49,27 @@ Node *WithNodeFactory::getNode(const QString &tagContent, Parser *p) const
           TagSyntaxError,
           QStringLiteral(
               "%1 expected format is 'name=value' or 'value as name'")
-              .arg(expr.first()));
+              .arg(expr.first()),
+                    tag.linenumber,
+                    tag.columnnumber,
+                    tag.content);
     }
   } else {
     namedExpressions.push_back({expr.at(3), FilterExpression(expr.at(1), p)});
   }
 
-  auto n = new WithNode(namedExpressions, p);
-  auto nodeList = p->parse(n, QStringLiteral("endwith"));
+  auto n = new WithNode(tag, namedExpressions, p);
+  auto nodeList = p->parse(n, QStringLiteral("endwith"), tag);
   n->setNodeList(nodeList);
   p->removeNextToken();
 
   return n;
 }
 
-WithNode::WithNode(
-    const std::vector<std::pair<QString, FilterExpression>> &namedExpressions,
-    QObject *parent)
-    : Node(parent), m_namedExpressions(namedExpressions)
+WithNode::WithNode(const Grantlee::Token &token,
+                   const std::vector<std::pair<QString, FilterExpression>> &namedExpressions,
+                   QObject *parent)
+    : Node(token, parent), m_namedExpressions(namedExpressions)
 {
 }
 

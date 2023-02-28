@@ -25,26 +25,30 @@
 
 WidthRatioNodeFactory::WidthRatioNodeFactory() = default;
 
-Node *WidthRatioNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *WidthRatioNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   if (expr.size() != 4) {
     throw Grantlee::Exception(
-        TagSyntaxError, QStringLiteral("widthratio takes three arguments"));
+        TagSyntaxError, QStringLiteral("widthratio takes three arguments"),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
   FilterExpression valExpr(expr.at(1), p);
   FilterExpression maxExpr(expr.at(2), p);
   FilterExpression maxWidth(expr.at(3), p);
 
-  return new WidthRatioNode(valExpr, maxExpr, maxWidth, p);
+  return new WidthRatioNode(tag, valExpr, maxExpr, maxWidth, p);
 }
 
-WidthRatioNode::WidthRatioNode(const FilterExpression &valExpr,
+WidthRatioNode::WidthRatioNode(const Grantlee::Token &token,
+                               const FilterExpression &valExpr,
                                const FilterExpression &maxExpr,
                                const FilterExpression &maxWidth,
                                QObject *parent)
-    : Node(parent)
+    : Node(token, parent)
 {
   m_valExpr = valExpr;
   m_maxExpr = maxExpr;

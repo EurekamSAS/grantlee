@@ -31,7 +31,7 @@ class AutoescapeNodeFactory : public AbstractNodeFactory
 public:
   AutoescapeNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class AutoescapeNode : public Node
@@ -40,7 +40,7 @@ class AutoescapeNode : public Node
 public:
   enum State { On, Off };
 
-  explicit AutoescapeNode(int state, QObject *parent = {});
+  explicit AutoescapeNode(const Grantlee::Token& m_token, int state, QObject *parent = {});
 
   void setList(const NodeList &list);
 

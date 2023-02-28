@@ -26,18 +26,18 @@
 
 IfNodeFactory::IfNodeFactory() = default;
 
-Node *IfNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *IfNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   QVector<QPair<QSharedPointer<IfToken>, NodeList>> nodelistConditions;
 
-  auto n = new IfNode(p);
+  auto n = new IfNode(tag, p);
 
   IfParser ip(p, expr);
   auto cond = ip.parse();
   auto nodelist = p->parse(n, {QStringLiteral("elif"), QStringLiteral("else"),
-                               QStringLiteral("endif")});
+                               QStringLiteral("endif")}, tag);
   nodelistConditions.push_back(qMakePair(cond, nodelist));
 
   auto token = p->takeNextToken();
@@ -48,13 +48,13 @@ Node *IfNodeFactory::getNode(const QString &tagContent, Parser *p) const
     IfParser ep(p, expr);
     cond = ep.parse();
     nodelist = p->parse(n, {QStringLiteral("elif"), QStringLiteral("else"),
-                            QStringLiteral("endif")});
+                            QStringLiteral("endif")},tag);
     nodelistConditions.push_back(qMakePair(cond, nodelist));
 
     token = p->takeNextToken();
   }
   if (token.content == QLatin1String("else")) {
-    nodelist = p->parse(n, QStringLiteral("endif"));
+    nodelist = p->parse(n, QStringLiteral("endif"), tag);
     nodelistConditions.push_back(qMakePair(nullptr, nodelist));
     p->takeNextToken();
   }
@@ -66,13 +66,16 @@ Node *IfNodeFactory::getNode(const QString &tagContent, Parser *p) const
     throw Grantlee::Exception(
         TagSyntaxError,
         QStringLiteral("'%1' statement requires at least one argument")
-            .arg(commandName));
+            .arg(commandName),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
 
   return n;
 }
 
-IfNode::IfNode(QObject *parent) : Node(parent) {}
+IfNode::IfNode(const Grantlee::Token &token, QObject *parent) : Node(token, parent) {}
 
 void IfNode::setNodelistConditions(
     const QVector<QPair<QSharedPointer<IfToken>, NodeList>> &conditionNodelists)
@@ -100,4 +103,9 @@ void IfNode::render(OutputStream *stream, Context *c) const
       return;
     }
   }
+}
+
+const QVector<QPair<QSharedPointer<IfToken>, NodeList>>  IfNode::conditionNodeLists() const
+{
+    return mConditionNodelists;
 }

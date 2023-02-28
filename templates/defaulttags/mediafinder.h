@@ -30,14 +30,14 @@ class MediaFinderNodeFactory : public AbstractNodeFactory
 public:
   MediaFinderNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class MediaFinderNode : public Node
 {
   Q_OBJECT
 public:
-  explicit MediaFinderNode(const QList<FilterExpression> &mediaExpressionList,
+  explicit MediaFinderNode(const Grantlee::Token &token, const QList<FilterExpression> &mediaExpressionList,
                            QObject *parent = {});
 
   void render(OutputStream *stream, Context *c) const override;

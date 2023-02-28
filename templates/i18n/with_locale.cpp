@@ -29,31 +29,35 @@
 
 WithLocaleNodeFactory::WithLocaleNodeFactory() = default;
 
-Node *WithLocaleNodeFactory::getNode(const QString &tagContent, Parser *p) const
+Node *WithLocaleNodeFactory::getNode(const Grantlee::Token &tag, Parser *p) const
 {
-  auto expr = smartSplit(tagContent);
+  auto expr = smartSplit(tag.content);
 
   if (expr.size() != 2) {
     throw Grantlee::Exception(
         TagSyntaxError,
         QStringLiteral(
             "%1 expected format is for example 'with_locale \"de_DE\"'")
-            .arg(expr.first()));
+            .arg(expr.first()),
+                  tag.linenumber,
+                  tag.columnnumber,
+                  tag.content);
   }
 
   FilterExpression fe(expr.at(1), p);
 
-  auto n = new WithLocaleNode(fe, p);
-  auto nodeList = p->parse(n, QStringLiteral("endwith_locale"));
+  auto n = new WithLocaleNode(tag, fe, p);
+  auto nodeList = p->parse(n, QStringLiteral("endwith_locale"), tag);
   n->setNodeList(nodeList);
   p->removeNextToken();
 
   return n;
 }
 
-WithLocaleNode::WithLocaleNode(const FilterExpression &localeName,
+WithLocaleNode::WithLocaleNode(const Grantlee::Token &token,
+                               const FilterExpression &localeName,
                                QObject *parent)
-    : Node(parent), m_localeName(localeName)
+    : Node(token, parent), m_localeName(localeName)
 {
 }
 

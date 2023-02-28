@@ -31,14 +31,15 @@ class RegroupNodeFactory : public AbstractNodeFactory
 public:
   RegroupNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class RegroupNode : public Node
 {
   Q_OBJECT
 public:
-  RegroupNode(const FilterExpression &target,
+  RegroupNode(const Grantlee::Token &token,
+              const FilterExpression &target,
               const FilterExpression &expression, const QString &varName,
               QObject *parent = {});
 

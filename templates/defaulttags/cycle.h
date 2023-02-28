@@ -31,7 +31,7 @@ class CycleNodeFactory : public AbstractNodeFactory
 public:
   CycleNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 /**
@@ -77,7 +77,7 @@ class CycleNode : public Node
 {
   Q_OBJECT
 public:
-  CycleNode(const QList<FilterExpression> &list, const QString &name,
+  CycleNode(const Grantlee::Token &token, const QList<FilterExpression> &list, const QString &name,
             QObject *parent = {});
 
   void render(OutputStream *stream, Context *c) const override;

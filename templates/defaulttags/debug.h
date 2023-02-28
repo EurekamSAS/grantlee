@@ -31,14 +31,14 @@ class DebugNodeFactory : public AbstractNodeFactory
 public:
   DebugNodeFactory();
 
-  Node *getNode(const QString &tagContent, Parser *p) const override;
+  Node *getNode(const Grantlee::Token &tag, Parser *p) const override;
 };
 
 class DebugNode : public Node
 {
   Q_OBJECT
 public:
-  DebugNode(QObject *parent = {});
+  DebugNode(const Grantlee::Token &token, QObject *parent = {});
 
   void render(OutputStream *stream, Context *c) const override;
 
